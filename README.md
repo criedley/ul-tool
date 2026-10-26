@@ -43,11 +43,11 @@ Out of scope for now: the "No Agilent 19.104DV.2" and "No Agilent 19.104DV.3" bu
 
 ## Architecture
 
-![App architecture](docs/architecture.svg)
+![App architecture](docs/architecture.png)
 
 ## Data flow
 
-![Data flow](docs/data-flow.svg)
+![Data flow](docs/data-flow.png)
 
 ## Behavior being ported
 
