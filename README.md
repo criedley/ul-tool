@@ -43,87 +43,11 @@ Out of scope for now: the "No Agilent 19.104DV.2" and "No Agilent 19.104DV.3" bu
 
 ## Architecture
 
-```mermaid
-%%{init: {"flowchart": {"padding": 20, "nodeSpacing": 40, "rankSpacing": 50}}}%%
-flowchart TB
-    subgraph UI["Web UI"]
-        U1["Upload CTS data"]
-        U2["Upload compact report"]
-        U3["Upload Agilent CSV"]
-        U4["TC key form"]
-        U5["Stability end time"]
-        U6["Download report"]
-    end
-
-    subgraph API["Backend API"]
-        R1["POST /consolidate"]
-        R2["POST /max-temps"]
-        R3["POST /stability"]
-        R4["POST /graphs"]
-        R5["GET /report"]
-    end
-
-    subgraph CORE["Core modules"]
-        P1["parsing"]
-        P2["align"]
-        P3["max_temps"]
-        P4["stability"]
-        P5["plots"]
-        P6["report"]
-    end
-
-    subgraph STORE["Session storage"]
-        S1[("uploads")]
-        S2[("working data")]
-        S3[("report xlsx")]
-    end
-
-    U1 & U2 & U3 & U4 --> R1
-    U5 --> R3
-    R1 --> P1 --> P2 --> P6
-    R2 --> P3 --> P6
-    R3 --> P4 --> P6
-    R4 --> P5 --> P6
-    P1 <--> S1
-    P2 <--> S2
-    P6 --> S3 --> R5 --> U6
-```
+![App architecture](docs/architecture.svg)
 
 ## Data flow
 
-```mermaid
-%%{init: {"flowchart": {"padding": 20, "nodeSpacing": 40, "rankSpacing": 50}}}%%
-flowchart LR
-    A["Raw CTS data"] --> P["Parse and normalize"]
-    B["Agilent CSV"] --> P
-    K["TC key"] --> P
-    C["Compact report"] --> W
-
-    P --> AL["Align"]
-    AL --> MT["Max temps"]
-    AL --> ST["Stability"]
-    AL --> PL["Plots"]
-
-    MT --> W["Build report"]
-    ST --> W
-    PL --> W
-    P --> W
-    W --> O[("Report xlsx")]
-
-    MT -. "flag: delta over 10 F" .-> O
-    ST -. "flag: spread over 3 K" .-> O
-```
-
-| Step | Detail |
-|---|---|
-| Parse and normalize | timestamps, °F values, channel names |
-| TC key | channel, name, max allowed °C |
-| Align | crop Agilent data to the CTS start and end times |
-| Max temps | max, average of 5th–10th highest, °C, margin to limit |
-| Stability | readings at end−30, end−15 and end; spread vs 3 K |
-| Plots | room temps, amps/volts, watts, ESP, pressure, capacity |
-| Report | XlsxWriter: sheets, formulas, red flags |
-| Core modules | `parsing/` (cts, agilent, tckey), `align.py`, `checks/`, `plots.py`, `report.py` |
+![Data flow](docs/data-flow.svg)
 
 ## Behavior being ported
 
