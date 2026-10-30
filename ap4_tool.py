@@ -8,6 +8,9 @@ import numpy as np, pandas as pd
 from openpyxl import load_workbook, Workbook
 from openpyxl.chart import ScatterChart, Reference, Series
 from openpyxl.styles import PatternFill
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.chart.axis import ChartLines
+from openpyxl.chart.layout import Layout, ManualLayout
 
 RED = PatternFill("solid", start_color="FFFF0000", end_color="FFFF0000")
 
@@ -172,11 +175,24 @@ CHARTS = [
 
 def _chart(title, xt, yt):
     c = ScatterChart(); c.title = title; c.scatterStyle = "smoothMarker"
-    c.varyColors = False                 # one colour per series, not per point
+    c.varyColors = False
     c.x_axis.title = xt; c.y_axis.title = yt
     c.x_axis.delete = False; c.y_axis.delete = False
-    c.x_axis.tickLblPos = "low"          # keep X labels at the bottom for negative data
-    c.width, c.height = 22, 11
+    c.x_axis.tickLblPos = "low"
+    c.width, c.height = 24, 12
+
+    # don't let titles/legend draw on top of the plot
+    c.title.overlay = False
+    c.x_axis.title.overlay = False
+    c.y_axis.title.overlay = False
+    c.legend.position = "b"
+    c.legend.overlay = False
+
+    # fixed plot area, leaving room for axis labels, axis titles and legend
+    c.layout = Layout(manualLayout=ManualLayout(
+        layoutTarget="inner", xMode="edge", yMode="edge",
+        x=0.10, y=0.12, w=0.78, h=0.60))
+    
     return c
 
 def write_cts_charts(wb, df):
@@ -186,14 +202,28 @@ def write_cts_charts(wb, df):
     for row in df[cols].itertuples(index=False): data.append(list(row))
     n = len(df); x = Reference(data, min_col=1, min_row=2, max_row=n + 1)
     ws = wb.create_sheet("CTS Charts"); anchor = 1
+
+    SEPARATE_AXIS = {"Amps and Volts"}   # amps (~17) and volts (~195) differ a lot; keep these split
+
     for _, ctitle, spec, y1, y2 in chs:
-        prim = _chart(ctitle, "Time (s)", y1); sec = _chart(ctitle, "Time (s)", y2 or "") if y2 else None
+        two_axes = bool(y2) and ctitle in SEPARATE_AXIS
+        ytitle = y1 if (two_axes or not y2) else f"{y1} / {y2}"
+        prim = _chart(ctitle, "Time (s)", ytitle)
+        sec = _chart(ctitle, "Time (s)", y2) if two_axes else None
+        if sec:
+            sec.x_axis.delete = True          # drop the duplicate X axis on the secondary chart
         for chn, name, is_sec in spec:
             if chn not in df.columns: continue
             ref = Reference(data, min_col=cols.index(chn) + 1, min_row=2, max_row=n + 1)
             s = Series(ref, x, title=name); s.marker.symbol = "none"; s.smooth = True
             (sec if (is_sec and sec) else prim).series.append(s)
         if sec and sec.series:
+            # make secondary grids dotted
+            sec.y_axis.majorGridlines = ChartLines(spPr=GraphicalProperties())
+            sec.y_axis.majorGridlines.spPr.line.dashStyle = "sysDot"
+            sec.y_axis.majorGridlines.spPr.line.solidFill = "A6A6A6"
+            sec.y_axis.majorGridlines.spPr.line.width = 9525   # 0.75 pt
+            
             sec.y_axis.axId = 200; sec.y_axis.crosses = "max"; prim += sec
         if len(prim.series) + (len(sec.series) if sec else 0) == 1:
             prim.legend = None
