@@ -1,6 +1,6 @@
 # UL Tool
 
-A locally run web app that automates the UL (Underwriters Laboratory) chamber-test data processing now done by an Excel macro workbook plus manual Excel steps.
+A locally run web app that automates the UL (Underwriters Laboratory) chamber-test data processing now done by an Excel macro workbook.
 
 > **Status:** Planning / early design. Nothing here is implemented yet. This README describes the intended scope and architecture.
 
@@ -29,13 +29,12 @@ Out of scope for now: the "No Agilent 19.104DV.2" and "No Agilent 19.104DV.3" bu
 
 **Inputs**
 - Raw CTS chamber data (`.xls` or `.xlsx`)
-- Compact report (the CTS summary report)
 - Agilent DAQ CSV (optional), e.g. `Scans_1_To_5143_Channels_1001_To_1034.csv`
 - TC key: channel number, channel name and max allowed temperature (°C), as YAML/JSON or filled in on an HTML form
 - Stability end time (`hh:mm`, or `0` for end of data)
 
 **Output:** one combined Excel report containing:
-- `Report`: the compact report
+<!-- - `Report`: the compact report -->
 - `RawData`: the raw CTS data
 - TC sheet(s) with max-temp and stability results, with red flags
 - `AgilentData`: the cropped Agilent data (optional)
@@ -45,9 +44,9 @@ Out of scope for now: the "No Agilent 19.104DV.2" and "No Agilent 19.104DV.3" bu
 
 ![App architecture](docs/architecture.png)
 
-## Data flow
+<!-- ## Data flow
 
-![Data flow](docs/data-flow.png)
+![Data flow](docs/data-flow.png) -->
 
 ## Behavior being ported
 
@@ -133,10 +132,8 @@ ul-tool/
 
 ## Open questions
 
-1. Should the report keep live Excel formulas (as the macro does) or static values?
-2. Should the app split alignment/cropping out as its own step (as in the flowchart) or run it inside the tool?
-3. Is column 1 or column 2 the correct time axis for the charts?
-4. Should the stability headers keep the macro's labels or be corrected?
+1. Should the report keep live Excel formulas (as the macro does) or static values?. Right now it is static values.
+2. Should the stability headers keep the macro's labels or be corrected?
 
 ## Getting started
 
