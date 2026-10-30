@@ -7,7 +7,11 @@ authors = [
     { name = "criedley", email = "conner.riedley@gmail.com" }
 ]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "numpy>=2.5.4",
+    "openpyxl>=3.1.5",
+    "pandas>=3.1.0",
+]
 
 [project.scripts]
 ul-tool = "ul_tool:main"
